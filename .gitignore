@@ -1,0 +1,19 @@
+# ignore egg info directory
+*.egg-info/
+
+# ignore __pycache__ directory
+__pycache__/
+*.pyc
+
+# ignore all .pt files
+*.pt
+*.pth
+
+# logger
+wandb/
+
+checkpoints/
+
+.vscode
+
+.DS_Store
