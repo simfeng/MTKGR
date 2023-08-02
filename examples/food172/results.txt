@@ -1,0 +1,139 @@
+(libmtl) [root@k8s-n1 food172]# python train_food172.py --weighting EW --arch HPS --dataset_path /www/datasets/Food172 --gpu_id 0,1,2,3 --scheduler step --epochs 10
+========================================
+General Configuration:
+        Wighting: EW
+        Architecture: HPS
+        Rep_Grad: False
+        Multi_Input: False
+        Seed: 0
+        Device: cuda:0,1,2,3
+Optimizer Configuration:
+        optim: adam
+        lr: 0.0001
+        weight_decay: 1e-05
+Scheduler Configuration:
+        scheduler: step
+        step_size: 100
+        gamma: 0.5
+========================================
+Total Params: 84722412
+Trainable Params: 84722412
+Non-trainable Params: 0
+========================================
+LOG FORMAT | multiclass_LOSS Top_1 Top_5 | TIME
+Epoch: 0000 | TRAIN: 4.0168 0.1436 0.3844 | Time: 1471.1768 | TEST: 3.4505 0.2027 0.4830 | Time: 155.2318
+Epoch: 0001 | TRAIN: 2.6524 0.3328 0.6655 | Time: 1524.9385 | TEST: 1.9320 0.4897 0.8025 | Time: 155.8944
+Epoch: 0002 | TRAIN: 1.9141 0.4925 0.8038 | Time: 1521.4577 | TEST: 1.7696 0.5295 0.8211 | Time: 155.7912
+Epoch: 0003 | TRAIN: 1.2848 0.6468 0.8978 | Time: 1520.8166 | TEST: 1.9055 0.5295 0.8136 | Time: 155.7738
+Epoch: 0004 | TRAIN: 0.7471 0.7781 0.9626 | Time: 1519.7316 | TEST: 1.8025 0.5672 0.8395 | Time: 155.5019
+Epoch: 0005 | TRAIN: 0.4195 0.8726 0.9854 | Time: 1519.1788 | TEST: 2.0693 0.5450 0.8196 | Time: 155.4524
+Epoch: 0006 | TRAIN: 0.2740 0.9176 0.9934 | Time: 1519.5260 | TEST: 2.3930 0.4998 0.7870 | Time: 155.4055
+Epoch: 0007 | TRAIN: 0.2202 0.9326 0.9958 | Time: 1518.1907 | TEST: 2.5468 0.5185 0.7915 | Time: 155.1847
+Epoch: 0008 | TRAIN: 0.1764 0.9461 0.9972 | Time: 1517.9667 | TEST: 2.8822 0.4917 0.7800 | Time: 155.1979
+Epoch: 0009 | TRAIN: 0.1483 0.9546 0.9973 | Time: 1519.3759 | TEST: 2.8932 0.4933 0.7670 | Time: 154.9644
+
+
+(libmtl) [root@k8s-n1 food172]# python train_food172.py --weighting EW --arch HPS --dataset_path /www/datasets/Food172 --gpu_id 1,2,3 --scheduler step --train_bs 64 -
+-test_bs 64
+========================================
+General Configuration:
+        Wighting: EW
+        Architecture: HPS
+        Rep_Grad: False
+        Multi_Input: False
+        Seed: 0
+        Device: cuda:1,2,3
+Optimizer Configuration:
+        optim: adam
+        lr: 0.0001
+        weight_decay: 1e-05
+Scheduler Configuration:
+        scheduler: step
+        step_size: 100
+        gamma: 0.5
+========================================
+Total Params: 84722412
+Trainable Params: 84722412
+Non-trainable Params: 0
+========================================
+LOG FORMAT | multiclass_LOSS Top_1 Top_5 | TIME
+Epoch: 0000 | TRAIN: 2.0363 0.5266 0.7780 | Time: 2905.6801 | TEST: 0.9577 0.7337 0.9315 | Time: 328.0333
+Epoch: 0001 | TRAIN: 0.8764 0.7516 0.9428 | Time: 2888.5127 | TEST: 0.8004 0.7798 0.9468 | Time: 327.2548
+Epoch: 0002 | TRAIN: 0.6222 0.8175 0.9675 | Time: 2889.0453 | TEST: 0.7747 0.7939 0.9521 | Time: 327.7808
+Epoch: 0003 | TRAIN: 0.4674 0.8597 0.9813 | Time: 2888.2389 | TEST: 0.7197 0.8096 0.9563 | Time: 327.4475
+Epoch: 0004 | TRAIN: 0.3489 0.8922 0.9899 | Time: 2887.0914 | TEST: 0.7590 0.8082 0.9559 | Time: 327.2805
+Epoch: 0005 | TRAIN: 0.2748 0.9133 0.9944 | Time: 2887.2289 | TEST: 0.8796 0.7808 0.9460 | Time: 327.1262
+Epoch: 0006 | TRAIN: 0.2212 0.9300 0.9961 | Time: 2884.7251 | TEST: 0.7690 0.8125 0.9573 | Time: 327.0022
+Epoch: 0007 | TRAIN: 0.1828 0.9425 0.9973 | Time: 2885.4706 | TEST: 0.8954 0.7929 0.9469 | Time: 327.5887
+
+(libmtl) [root@k8s-n1 food172]# python train_food172.py --weighting Aligned_MTL --arch HPS --dataset_path /www/datasets/Food172 --gpu_id 0,1,2,3 --scheduler step --train_bs 128 --test_bs 128 --img_size 256 256 3 --num_experts 2
+========================================
+General Configuration:
+        Wighting: Aligned_MTL
+        Architecture: HPS
+        Rep_Grad: False
+        Multi_Input: False
+        Seed: 0
+        Device: cuda:0,1,2,3
+Optimizer Configuration:
+        optim: adam
+        lr: 0.0001
+        weight_decay: 1e-05
+Scheduler Configuration:
+        scheduler: step
+        step_size: 100
+        gamma: 0.5
+========================================
+Total Params: 28877095
+Trainable Params: 28877095
+Non-trainable Params: 0
+========================================
+LOG FORMAT | multiclass_LOSS Top_1 Top_5 | multilabel_LOSS MICRO_PRECISION MICRO_RECALL MICRO_F1 MACRO_PRECISION MACRO_RECALL MACRO_F1 SAMPLES_PRECISION SAMPLES_RECALL SAMPLES_F1 | TIME
+Epoch: 0000 | TRAIN: 4.4826 0.1062 0.2683 | 0.7190 0.6941 0.0083 0.2004 0.9243 0.5947 0.5716 0.9261 0.0086 0.0569 | Time: 769.2503 | TEST: 3.7815 0.2332 0.4854 | 0.6966 0.9851 0.0001 0.0039 0.9956 0.9293 0.9255 0.9999 0.0001 0.0000 | Time: 72.6523
+Epoch: 0001 | TRAIN: 3.7191 0.2245 0.4695 | 0.6954 0.9658 0.0000 0.0250 0.9948 0.5897 0.5887 0.9997 0.0000 0.0002 | Time: 750.8208 | TEST: 3.2497 0.3151 0.5856 | 0.6945 0.9926 0.0000 0.0001 0.9988 0.9293 0.9283 0.9999 0.0001 0.0000 | Time: 72.2750
+Epoch: 0002 | TRAIN: 3.3692 0.2776 0.5390 | 0.6942 0.9867 0.0000 0.0133 0.9998 0.5893 0.5893 0.9999 0.0000 0.0001 | Time: 744.3817 | TEST: 2.9659 0.3569 0.6325 | 0.6939 0.9962 0.0000 0.0039 0.9998 0.9293 0.9291 1.0000 0.0000 0.0000 | Time: 73.0833
+Epoch: 0003 | TRAIN: 3.1635 0.3085 0.5785 | 0.6938 0.9917 0.0000 0.0083 0.9983 0.5897 0.5892 0.9999 0.0000 0.0001 | Time: 755.1434 | TEST: 2.7840 0.3826 0.6647 | 0.6936 0.9962 0.0000 0.0038 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 73.1877
+Epoch: 0004 | TRAIN: 3.0285 0.3305 0.5972 | 0.6937 0.9869 0.0000 0.0050 0.9961 0.5892 0.5886 0.9998 0.0000 0.0001 | Time: 755.5272 | TEST: 2.6571 0.4028 0.6847 | 0.6935 1.0000 0.0000 0.0000 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 72.9422
+Epoch: 0005 | TRAIN: 2.9190 0.3456 0.6189 | 0.6936 0.9984 0.0000 0.0000 0.9991 0.5894 0.5893 1.0000 0.0000 0.0000 | Time: 757.0956 | TEST: 2.5592 0.4191 0.6995 | 0.6935 1.0000 0.0000 0.0000 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 72.3632
+Epoch: 0006 | TRAIN: 2.8395 0.3590 0.6327 | 0.6935 0.9983 0.0000 0.0017 1.0000 0.5903 0.5903 1.0000 0.0000 0.0000 | Time: 755.4373 | TEST: 2.4865 0.4301 0.7082 | 0.6934 1.0000 0.0000 0.0000 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 73.2390
+Epoch: 0007 | TRAIN: 2.7657 0.3711 0.6453 | 0.6935 0.9983 0.0000 0.0017 0.9999 0.5902 0.5902 1.0000 0.0000 0.0000 | Time: 751.7109 | TEST: 2.4258 0.4389 0.7179 | 0.6934 1.0000 0.0000 0.0000 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 73.0509
+Epoch: 0008 | TRAIN: 2.7117 0.3837 0.6548 | 0.6935 0.9967 0.0000 0.0000 0.9989 0.5891 0.5890 1.0000 0.0000 0.0000 | Time: 765.5866 | TEST: 2.3754 0.4477 0.7264 | 0.6934 1.0000 0.0000 0.0000 1.0000 0.9293 0.9293 1.0000 0.0000 0.0000 | Time: 73.0685
+
+
+
+
+pretty-universe-96 resnet50
+python train_food172_swin_t.py --weighting Aligned_MTL --arch DSelect_k --dataset_path /www/datasets/Food172 --gpu_id 0,1,2,3 --scheduler step --train_bs 32 --test_bs 32 --img_size 3 256 256 --num_experts 2
+
+全部训练数据 Runsgentle-oath-133 best epoch 53  link: https://wandb.ai/move/LibMTL/runs/h82ainm7/workspace?workspace=user-frankf
+epoch path: /www/logs_libmtl/checkout_0726/checkpoint_epoch_53.pth
+gentle-oath-133	0.981078696013289
+gentle-oath-133	0.979377408477842
+gentle-oath-133	0.9114150747508306
+gentle-oath-133	0.8898723506743738
+
+TEST: 0.5223 0.8901 0.9794 | 0.0130 0.8301 0.6455 0.7259 0.9469 0.8570 0.8531 0.8574 0.6785 0.7489 | Time: 176.6583
+                0.8905
+测试 afire
+
+
+
+
+swin_v2_t
+python train_food172_swin_t.py --weighting EW --arch HPS --dataset_path /www/datasets/Food172 --gpu_id 0,1,2,3 --scheduler step --train_bs 32 --test_bs 32 --prefix sub_50_
+best epoch 103
+checkpoint:  /www/logs_libmtl/food172_swin_t-sub_50_-EW-HPS-202307241206/checkpoint_epoch_103.pt
+TEST: 0.8591 0.8541 0.9644 | 0.0143 0.8030 0.6250 0.7024 0.9333 0.8519 0.8423 0.8363 0.6547 0.7313 | Time: 179.4877
+
+beta 1
+TEST: 0.8591 0.8538 nan |
+
+beta 0.8
+TEST: 0.8591 0.8521 nan | 0.0143 0.8031 0.6254 0.7027 0.9334 0.8519 0.8413 0.8363 0.6557 0.7319 | Time: 187.1499
+
+0.5
+TEST: 0.8591 0.8465 nan | 0.0143 0.8031 0.6254 0.7027 0.9334 0.8519 0.8413 0.8363 0.6557 0.7319 | Time: 185.5689
+
+1.01 0.9 0.8  _ingredient_score = torch.sum(_logits_ingredients * (_logits_ingredients > 0.5) * self.MovP_ingredients).item()
+TEST: 0.8591 0.8545 nan | 0.0143 0.8031 0.6254 0.7027 0.9334 0.8519 0.8413 0.8363 0.6557 0.7319 | Time: 187.0535
+

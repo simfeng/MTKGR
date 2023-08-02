@@ -33,6 +33,10 @@ class AFIRE(object):
             train_food_label: food label of training dataset, size: (num_data,)
             train_ingreident_label: ingredient label of training dataset, size: (num_data, num_ingredients)
         """
+        print("====> init AFIRE <====")
+        print(" \tnum_food:", num_food)
+        print(" \tnum_ingredients:", num_ingredients)
+        print(" \tbeta:", beta)
         super(AFIRE, self).__init__()
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.beta = beta
@@ -56,7 +60,7 @@ class AFIRE(object):
 
     def update_MovP(self, model, dataloader, save_movp=True, filename="MovP.pt"):
         """update moving precision of each food and each ingredient."""
-
+        print("==> update MovP ...")
         self.MovP_file = filename
         self.save_movp = save_movp
         self.MovP_food = torch.zeros(self.num_food, device=self.device)
@@ -232,6 +236,96 @@ class AFIRE(object):
                 self.MovP_file,
             )
 
+    def mpr_for_train(self, logits, ground_truth=None):
+        """Moving Precision Ranking (MPR): use ingredient proportion and MovP to reason out the food and ingredient.
+        param:
+            logits: logits of test dataset,
+                    {
+                        "multiclass": torch.tensor(batch_size, num_food),
+                        "multilabel": torch.tensor(batch_size, num_ingredients)
+                    }
+        return:
+            labels: {
+                "multiclass": torch.tensor(batch_size),
+                "multilabel": torch.tensor(batch_size, num_ingredients)
+            }
+        """
+
+        # print('----> groud_truth:', ground_truth['multiclass'].shape, ground_truth['multilabel'].shape)
+
+        labels = {"multiclass": [], "multilabel": []}
+
+        top5_food, ingredients = self._logits_to_preds(logits, topk=5)
+        # top5_food size (batch_size, 5), ingredients size (batch_size, num_ingredients)
+
+        logits_food = logits["multiclass"].softmax(1)  # size (batch_size, num_food)
+        top1_food = logits_food.argmax(1).flatten().tolist()
+
+        logits_ingredients = logits[
+            "multilabel"
+        ].sigmoid()  # size (batch_size, num_ingredients)
+
+        batch_size = logits["multiclass"].size()[0]
+
+        for i in range(batch_size):
+            _food_label = ground_truth["multiclass"][i].item()
+            # print('___food_label', _food_label)
+            if _food_label != -1: # 如果有真实标签，则返回
+                _ingredient_label = ground_truth["multilabel"][i].tolist()
+                labels["multiclass"].append(_food_label)
+                labels["multilabel"].append(_ingredient_label)
+                continue
+            
+            # 没有真实标签，进行推理
+            _top5_food = top5_food[i]  # 第 i 个样本的 top5 食物标签
+            # print('--> _top5_food:', _top5_food, type(_top5_food))
+            # _ingredients = ingredients[i]
+            _logits_food = logits_food[i]
+            _logits_ingredients = logits_ingredients[i]
+            # find the most similiar with _logits_ingredients in self.ingredient_proportion
+            _score = {}
+            for _food_pred in _top5_food:
+                # print("\n===============*****================")
+                # print('device:\n')
+                # print(self.ingredient_proportion.device, _logits_ingredients.device, self.MovP_ingredients.device)
+                # print(_food_pred, type(_food_pred))
+                # print(_logits_food[_food_pred].shape, type( _logits_food[_food_pred])) # torch.Size([]) <class 'torch.Tensor'>
+                # print(_logits_ingredients.shape, type(_logits_ingredients)) # torch.Size([353]) <class 'torch.Tensor'>
+                # print(self.ingredient_proportion[_food_pred].shape, type(self.ingredient_proportion[_food_pred])) # (172,) <class 'pandas.core.series.Series'>
+                # print(self.MovP_ingredients.shape, type(self.MovP_ingredients))
+
+                _food_score = (
+                    _logits_food[_food_pred] * self.MovP_food[_food_pred]
+                ).item()
+
+                # print (_logits_ingredients > 0.5) 中 1 的个数
+                # print('==> _logits_ingredients > 0.5:', (_logits_ingredients > 0.5).sum().item())
+
+                # _ingredient_score = torch.sum(_logits_ingredients * (_logits_ingredients > 0.5) * self.MovP_ingredients).item()
+                _ingredient_score = torch.sum(
+                    (_logits_ingredients > 0.5)
+                    * self.ingredient_proportion[_food_pred]
+                    * self.MovP_ingredients
+                ).item()
+                # _ingredient_score = torch.sum(_logits_ingredients * self.ingredient_proportion[_food_pred] * self.MovP_ingredients).item()
+                # _ingredient_score = torch.sum(_logits_ingredients * (_logits_ingredients > 0.5) * self.ingredient_proportion[_food_pred]).item()
+
+                _score[_food_pred] = _food_score + self.beta * _ingredient_score
+            # sort _score by value
+            _score = sorted(_score.items(), key=lambda x: x[1], reverse=True)
+            _food_label = _score[0][0]
+
+            labels["multiclass"].append(_food_label)
+            labels["multilabel"].append(
+                self.ingredient_proportion[_food_label].tolist()
+            )
+        
+        # return labels as tensor
+        labels["multiclass"] = torch.tensor(labels["multiclass"], device=self.device)
+        labels["multilabel"] = torch.tensor(labels["multilabel"], device=self.device)
+        # print("==> labels:", labels["multiclass"].shape, labels["multilabel"].shape)
+        return labels
+    
     def mpr(self, logits, ground_truth=None):
         """Moving Precision Ranking (MPR): use ingredient proportion and MovP to reason out the food and ingredient.
         param:

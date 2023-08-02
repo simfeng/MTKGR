@@ -1,0 +1,147 @@
+import torch
+
+# https://blog.csdn.net/weixin_40522801/article/details/106563354
+"""
+模型参数通过model.parameters()获取
+state_dict 是个dict,保存每层与每层对于的参数张量
+"""
+
+# 1. 直接保存整个模型:
+# 这种保存/加载模型的过程使用了最直观的语法，所用代码量少。 这使用Python的pickle保存所有模块。
+# 这种方法的缺点是，保存模型的时候，序列化的数据被绑定到了特定的类和确切的目录。
+# 这是因为pickle不保存模型类本身，而是保存这个类的路径，并且在加载的时候会使用。
+# 因此，当在其他项目里使用或者重构的时候，加载模型的时候会出错。
+torch.save(model,"checkpoint.pt")
+# 加载模型
+torch.load('tensors.pt')
+torch.eval()
+
+# 2.推荐：只保存训练好的权重
+Torch.save(model.state_dict(),"checkpoint.pt")
+# 使用 state_dict 反序列化模型参数字典
+torch.load_state_dict(torch.load("save.pt"))
+# 固定dropout 和归一化层,否则每次推理会生成不同的结果
+torch.eval()
+
+# 3. 继续训练: 保存加载 checkpoint/ 
+"""
+在保存用于推理或者继续训练的常规检查点的时候，除了模型的state_dict之外，还必须保存其他参数。保存优化器的state_dict也非常重要，因为它包含了模型在训练时候优化器的缓存和参数。除此之外，还可以保存停止训练时epoch数，最新的模型损失，额外的
+"""
+torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            'loss': loss,
+            ...
+            }, PATH)
+
+# 加载：
+model = TheModelClass(*args, **kwargs)
+optimizer = TheOptimizerClass(*args, **kwargs)
+ 
+checkpoint = torch.load(PATH)
+model.load_state_dict(checkpoint['model_state_dict'])
+optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+epoch = checkpoint['epoch']
+loss = checkpoint['loss']
+model.eval()
+# - 或者 -
+model.train()
+
+ 
+# 4. 同时保存多个模型到一个文件
+torch.save({
+            'modelA_state_dict': modelA.state_dict(),
+            'modelB_state_dict': modelB.state_dict(),
+            'optimizerA_state_dict': optimizerA.state_dict(),
+            'optimizerB_state_dict': optimizerB.state_dict(),
+            ...
+            }, PATH)
+
+modelA = TheModelAClass(*args, **kwargs)
+modelB = TheModelBClass(*args, **kwargs)
+optimizerA = TheOptimizerAClass(*args, **kwargs)
+optimizerB = TheOptimizerBClass(*args, **kwargs)
+ 
+checkpoint = torch.load(PATH)
+modelA.load_state_dict(checkpoint['modelA_state_dict'])
+modelB.load_state_dict(checkpoint['modelB_state_dict'])
+optimizerA.load_state_dict(checkpoint['optimizerA_state_dict'])
+optimizerB.load_state_dict(checkpoint['optimizerB_state_dict'])
+ 
+modelA.eval()
+modelB.eval()
+# - 或者 -
+modelA.train()
+modelB.train()
+
+
+# 5. 使用其他模型来预热当前模型
+"""
+在迁移学习或者训练新的复杂模型时，加载部分模型是很常见的。利用经过训练的参数，即使只有少数参数可用，也将有助于预热训练过程，并且使模型更快收敛.
+在加载部分模型参数进行预训练的时候，很可能会碰到键不匹配的情况（模型权重都是按键值对的形式保存并加载回来的）。因此，无论是缺少键还是多出键的情况，都可以过设定state=False来忽略不匹配的键
+"""
+torch.save(modelA.state_dict(), PATH)
+# 加载
+modelB = TheModelBClass(*args, **kwargs)
+modelB.load_state_dict(torch.load(PATH), strict=False)
+
+
+### 使用 map_location 参数 加载到 不同的 cpu, gpu 上
+# 单个gpu 的保存， cpu的使用
+device = torch.device('cpu')
+model = TheModelClass(*args, **kwargs)
+model.load_state_dict(torch.load(PATH, map_location=device))
+
+# 多个gpu 的保存, cpu 的使用
+# 在使用多GPU训练并保存模型时，模型的参数名都带上了module前缀，因此可以在加载模型时，把key中的这个前缀去掉：
+# 原始通过DataParallel保存的文件
+state_dict = torch.load('myfile.pth.tar')
+# 创建一个不包含`module.`的新OrderedDict
+from collections import OrderedDict
+new_state_dict = OrderedDict()
+for k, v in state_dict.items():
+    name = k[7:] # 去掉 `module.`
+    new_state_dict[name] = v
+# 加载参数
+model.load_state_dict(new_state_dict)
+
+# 单gpu 上保存， gpu上使用
+device = torch.device("cuda")
+model = TheModelClass(*args, **kwargs)
+model.load_state_dict(torch.load(PATH, map_location="cuda:0"))  # 选择希望使用的GPU
+model.to(device)
+
+# cpu上保存, gpu 上使用
+device = torch.device("cuda")
+model = TheModelClass(*args, **kwargs)
+model.load_state_dict(torch.load(PATH, map_location="cuda:0"))  # Choose whatever GPU device number you want
+model.to(device)
+# Make sure to call input = input.to(device) on any input tensors that you feed to the model
+
+# 分布式训练： 保存和加载torch.nn.DataParallel 模型
+# https://blog.csdn.net/weixin_41735859/article/details/108610687
+# 保存:
+torch.save(model.module.state_dict(), model_out_path)
+# 加载；
+model.load_state_dict(torch.load(PATH, map_location=device))
+
+
+torch.load('tensors.pt')
+ 
+# Load all tensors onto the CPU
+torch.load('tensors.pt', map_location=torch.device('cpu'))
+ 
+# Load all tensors onto the CPU, using a function
+torch.load('tensors.pt', map_location=lambda storage, loc: storage)
+ 
+# Load all tensors onto GPU 1
+torch.load('tensors.pt', map_location=lambda storage, loc: storage.cuda(1))
+ 
+# Map tensors from GPU 1 to GPU 0
+torch.load('tensors.pt', map_location={'cuda:1':'cuda:0'})
+ 
+# Load tensor from io.BytesIO object
+with open('tensor.pt') as f:
+    buffer = io.BytesIO(f.read())
+torch.load(buffer)
