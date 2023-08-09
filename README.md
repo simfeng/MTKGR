@@ -1,5 +1,5 @@
 # AFIRE
-Source code of **AFIRE: Abductive learning for Food and Ingredient REcognition**
+Source code of **MTKGR: Multi-Task Knowledge Graph Reasoning for Food and Ingredient Recognition**
 
 ![Code structure of AFIRE](afire.png "Code structure of AFIRE")
 
